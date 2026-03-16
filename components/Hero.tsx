@@ -83,7 +83,7 @@ export function Hero() {
         </p>
 
         {/* CTAs */}
-        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row font-primary w-full max-w-2xs md:max-w-lg">
+        <div className="flex flex-col items-center justify-center gap-3 md:flex-row font-primary w-full max-w-2xs md:max-w-lg">
           <Link
             href="#projects"
             className={cn(

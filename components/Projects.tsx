@@ -1,12 +1,15 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, Github } from "lucide-react";
 import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
 import TiltedCard from "@/components/TitledCard";
+import { supabase } from "@/lib/supabase";
+import type { Project } from "@/types/database";
 
-// ── Project data ─────────────────────────────────────────────────────────────
-const PROJECTS = [
+// ── Fallback data ─────────────────────────────────────────────────────────────
+const FALLBACK_PROJECTS = [
   {
     title: "Elephant Tours",
     category: "Full Stack · Travel",
@@ -35,7 +38,38 @@ const PROJECTS = [
   },
 ];
 
+function mapProject(p: Project) {
+  return {
+    title: p.title,
+    category: p.category,
+    overview: p.overview,
+    stack: p.stack,
+    live: p.live_url,
+    github: p.github_url,
+    images: p.images,
+    year: p.year,
+    accent: p.accent_color,
+    bg: p.bg_classes,
+  };
+}
+
 export function Projects() {
+  const [projects, setProjects] = useState(FALLBACK_PROJECTS);
+
+  useEffect(() => {
+    async function fetchProjects() {
+      const { data } = await supabase
+        .from('projects')
+        .select('*')
+        .order('sort_order');
+
+      if (data && data.length > 0) {
+        setProjects(data.map(mapProject));
+      }
+    }
+    fetchProjects();
+  }, []);
+
   return (
     <section
       id="projects"
@@ -69,7 +103,7 @@ export function Projects() {
           stackPosition="15%"
           baseScale={0.88}
         >
-          {PROJECTS.map((project, i) => (
+          {projects.map((project, i) => (
             <ScrollStackItem
               key={i}
               itemClassName={cn(

@@ -180,7 +180,7 @@ export function Navbar() {
             mobileMenuOpen ? "max-h-72 opacity-100 mt-4" : "max-h-0 opacity-0 mt-0"
           )}
         >
-          <div className="flex flex-col gap-1 pb-3 pt-3 border-t border-foreground/[0.06]">
+          <div className="flex flex-col gap-1 pb-3 pt-3 border-t border-foreground/[0.06] font-secondary">
             {navLinks.map((link, i) => {
               const Icon = link.icon;
               return (

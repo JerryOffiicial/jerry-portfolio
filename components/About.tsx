@@ -4,47 +4,47 @@ import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import ProfileCard from "@/components/ProfileCard";
 import profile_img from '@/public/profile2.png'
-// ── Q&A data ────────────────────────────────────────────────────────────────
-const QA = [
-  {
-    q: "What drives you as a developer?",
-    a: "Building things that actually work — fast, beautiful, and scalable. I love the moment a complex idea becomes a clean, working product.",
-  },
-  {
-    q: "What's your current stack?",
-    a: "React, Next.js, TypeScript, Tailwind CSS on the frontend. Node.js, Express, and Supabase on the backend — with a healthy respect for SQL and a soft spot for MongoDB.",
-  },
-  {
-    q: "What have you deployed recently?",
-    a: "Elephant Tours — a full-stack travel app with a hybrid CMS (Supabase + Sanity.io), admin dashboard, and zero-downtime Vercel deployment. Also contributed frontend work at Global Island (LK Web Design).",
-  },
-  {
-    q: "How do you approach a new project?",
-    a: "Understand the problem first, then the user. Architecture before aesthetics — but I won't build something that looks bad either.",
-  },
-  {
-    q: "Where are you based?",
-    a: "Kandy, Sri Lanka. Open to remote collaboration anywhere.",
-  },
-  {
-    q: "What are you working toward?",
-    a: "Growing into a senior full-stack role — deepening my systems thinking, contributing to open source, and building scalable projects that matter.",
-  },
+import { supabase } from "@/lib/supabase";
+import type { FAQ, Skill } from "@/types/database";
+
+// ── Fallback data (used when Supabase is unreachable) ─────────────────────────
+const FALLBACK_QA = [
+  { q: "What drives you as a developer?", a: "Building things that actually work — fast, beautiful, and scalable. I love the moment a complex idea becomes a clean, working product." },
+  { q: "What's your current stack?", a: "React, Next.js, TypeScript, Tailwind CSS on the frontend. Node.js, Express, and Supabase on the backend — with a healthy respect for SQL and a soft spot for MongoDB." },
+  { q: "What have you deployed recently?", a: "Elephant Tours — a full-stack travel app with a hybrid CMS (Supabase + Sanity.io), admin dashboard, and zero-downtime Vercel deployment. Also contributed frontend work at Global Island (LK Web Design)." },
+  { q: "How do you approach a new project?", a: "Understand the problem first, then the user. Architecture before aesthetics — but I won't build something that looks bad either." },
+  { q: "Where are you based?", a: "Kandy, Sri Lanka. Open to remote collaboration anywhere." },
+  { q: "What are you working toward?", a: "Growing into a senior full-stack role — deepening my systems thinking, contributing to open source, and building scalable projects that matter." },
 ];
 
-// ── Infinity carousel items ──────────────────────────────────────────────────
-const SKILLS = [
+const FALLBACK_SKILLS = [
   "React.js", "Next.js", "TypeScript", "Tailwind CSS",
   "Node.js", "Express.js", "Supabase", "Sanity.io",
   "MongoDB", "SQL Server", "Firebase", ".NET",
   "Java", "C#", "Git", "Vercel",
 ];
 
-// duplicate for seamless loop
-const TRACK = [...SKILLS, ...SKILLS];
-
 export function About() {
   const [open, setOpen] = useState<number | null>(0);
+  const [qaItems, setQaItems] = useState(FALLBACK_QA);
+  const [skills, setSkills] = useState(FALLBACK_SKILLS);
+
+  useEffect(() => {
+    async function fetchData() {
+      const [faqRes, skillRes] = await Promise.all([
+        supabase.from('faqs').select('*').order('sort_order'),
+        supabase.from('skills').select('*').order('sort_order'),
+      ]);
+
+      if (faqRes.data && faqRes.data.length > 0) {
+        setQaItems(faqRes.data.map((f: FAQ) => ({ q: f.question, a: f.answer })));
+      }
+      if (skillRes.data && skillRes.data.length > 0) {
+        setSkills(skillRes.data.map((s: Skill) => s.name));
+      }
+    }
+    fetchData();
+  }, []);
 
   return (
     <section
@@ -104,7 +104,7 @@ export function About() {
 
           {/* RIGHT — Q&A accordion */}
           <div className="flex flex-col justify-center">
-            {QA.map((item, i) => (
+            {qaItems.map((item, i) => (
               <QAItem
                 key={i}
                 index={i}
@@ -118,7 +118,7 @@ export function About() {
       </div>
 
       {/* ── ROW 3 : Infinity carousel ──────────────────────────────── */}
-      <SkillsCarousel />
+      <SkillsCarousel skills={skills} />
     </section>
   );
 }
@@ -201,7 +201,9 @@ function QAItem({
 }
 
 // ── Skills Carousel ───────────────────────────────────────────────────────────
-function SkillsCarousel() {
+function SkillsCarousel({ skills }: { skills: string[] }) {
+  const TRACK = [...skills, ...skills];
+
   return (
     <div className="relative w-full overflow-hidden">
       {/* fade masks */}
