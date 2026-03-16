@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import { StaticImageData } from 'next/image';
 import React, { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 
 const DEFAULT_INNER_GRADIENT = 'linear-gradient(145deg,#60496e8c 0%,#71C4FF44 100%)';
@@ -31,7 +32,7 @@ if (typeof document !== 'undefined' && !document.getElementById(KEYFRAMES_ID)) {
 }
 
 interface ProfileCardProps {
-  avatarUrl?: string;
+  avatarUrl?: string | StaticImageData;
   iconUrl?: string;
   grainUrl?: string;
   innerGradient?: string;
@@ -60,6 +61,11 @@ interface TiltEngine {
   getCurrent: () => { x: number; y: number; tx: number; ty: number };
   cancel: () => void;
 }
+
+const resolveUrl = (url: string | StaticImageData | undefined): string | undefined => {
+  if (!url) return undefined;
+  return typeof url === 'string' ? url : url.src;
+};
 
 const ProfileCardComponent: React.FC<ProfileCardProps> = ({
   avatarUrl = '<Placeholder for avatar URL>',
@@ -498,8 +504,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
               gridArea: '1 / -1'
             }}
           >
-            {/* Shine layer */}
-            <div style={shineStyle} />
+
 
             {/* Glare layer */}
             <div style={glareStyle} />
@@ -518,7 +523,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
             >
               <img
                 className="w-full absolute left-1/2 bottom-[-1px] will-change-transform transition-transform duration-[120ms] ease-out"
-                src={avatarUrl}
+                src={resolveUrl(avatarUrl)}
                 alt={`${name || 'User'} avatar`}
                 loading="lazy"
                 style={{
@@ -530,7 +535,8 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                 }}
                 onError={e => {
                   const t = e.target as HTMLImageElement;
-                  t.style.display = 'none';
+                  t.style.opacity = '0.5';
+                  t.src = resolveUrl(avatarUrl) ?? '';
                 }}
               />
               {showUserInfo && (
@@ -556,14 +562,14 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                     >
                       <img
                         className="w-full h-full object-cover rounded-full"
-                        src={miniAvatarUrl || avatarUrl}
+                        src={resolveUrl(miniAvatarUrl) || resolveUrl(avatarUrl)}
                         alt={`${name || 'User'} mini avatar`}
                         loading="lazy"
                         style={{ display: 'block', gridArea: 'auto', borderRadius: '50%', pointerEvents: 'auto' }}
                         onError={e => {
                           const t = e.target as HTMLImageElement;
                           t.style.opacity = '0.5';
-                          t.src = avatarUrl;
+                          t.src = resolveUrl(avatarUrl) ?? '';
                         }}
                       />
                     </div>
