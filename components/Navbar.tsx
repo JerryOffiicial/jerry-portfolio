@@ -39,6 +39,7 @@ export function Navbar() {
     { name: "Home", href: "#home", icon: Home },
     { name: "About", href: "#about", icon: User },
     { name: "Projects", href: "#projects", icon: FolderGit2 },
+    { name: "Blog", href: "#blog", icon: Mail },
     { name: "Contact", href: "#contact", icon: Mail },
   ];
 
