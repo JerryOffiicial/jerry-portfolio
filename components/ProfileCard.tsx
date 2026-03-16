@@ -535,6 +535,8 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                 }}
                 onError={e => {
                   const t = e.target as HTMLImageElement;
+                  if (t.dataset.imageError) return;
+                  t.dataset.imageError = 'true';
                   t.style.opacity = '0.5';
                   t.src = resolveUrl(avatarUrl) ?? '';
                 }}
@@ -568,6 +570,8 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
                         style={{ display: 'block', gridArea: 'auto', borderRadius: '50%', pointerEvents: 'auto' }}
                         onError={e => {
                           const t = e.target as HTMLImageElement;
+                          if (t.dataset.imageError) return;
+                          t.dataset.imageError = 'true';
                           t.style.opacity = '0.5';
                           t.src = resolveUrl(avatarUrl) ?? '';
                         }}

@@ -35,6 +35,13 @@ interface ScrollStackProps {
   onStackComplete?: () => void;
 }
 
+export interface TransformCacheEntry {
+  translateY: number;
+  scale: number;
+  rotation: number;
+  blur: number;
+}
+
 const ScrollStack: React.FC<ScrollStackProps> = ({
   children,
   className = '',
@@ -55,8 +62,9 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
   const animationFrameRef = useRef<number | null>(null);
   const lenisRef = useRef<Lenis | null>(null);
   const cardsRef = useRef<HTMLElement[]>([]);
-  const lastTransformsRef = useRef(new Map<number, any>());
+  const lastTransformsRef = useRef(new Map<number, TransformCacheEntry>());
   const isUpdatingRef = useRef(false);
+  const updateCardTransformsRef = useRef<() => void>(() => { });
   // Cache card top offsets so we never call getBoundingClientRect during scroll
   const cardOffsetsRef = useRef<number[]>([]);
   const endOffsetRef = useRef<number>(0);
@@ -227,9 +235,11 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
     getScrollData
   ]);
 
+  updateCardTransformsRef.current = updateCardTransforms;
+
   const handleScroll = useCallback(() => {
-    updateCardTransforms();
-  }, [updateCardTransforms]);
+    updateCardTransformsRef.current();
+  }, []);
 
   const setupLenis = useCallback(() => {
     if (useWindowScroll) {
@@ -287,6 +297,30 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
     }
   }, [handleScroll, useWindowScroll]);
 
+  // Effect 1: Init Lenis
+  useLayoutEffect(() => {
+    if (!useWindowScroll && !scrollerRef.current) return;
+
+    setupLenis();
+
+    const handleResize = () => {
+      cacheOffsets();
+      updateCardTransformsRef.current();
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (lenisRef.current) {
+        lenisRef.current.destroy();
+      }
+    };
+  }, [useWindowScroll, setupLenis, cacheOffsets]);
+
+  // Effect 2: Respond to prop changes
   useLayoutEffect(() => {
     if (!useWindowScroll && !scrollerRef.current) return;
 
@@ -301,43 +335,34 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
     cards.forEach((card, i) => {
       if (i < cards.length - 1) {
         card.style.marginBottom = `${itemDistance}px`;
+      } else {
+        card.style.marginBottom = '0px';
       }
       card.style.willChange = 'transform, filter';
       card.style.transformOrigin = 'top center';
       card.style.backfaceVisibility = 'hidden';
-      card.style.transform = 'translateZ(0)';
-      card.style.webkitTransform = 'translateZ(0)';
+      if (!card.style.transform || card.style.transform === 'none') {
+        card.style.transform = 'translateZ(0)';
+      }
+      if (!card.style.webkitTransform || card.style.webkitTransform === 'none') {
+        card.style.webkitTransform = 'translateZ(0)';
+      }
       card.style.perspective = '1000px';
       card.style.webkitPerspective = '1000px';
     });
 
     // Cache all offsets once, before any transforms are applied
     cacheOffsets();
-
-    setupLenis();
     updateCardTransforms();
 
-    // Recalculate offsets on resize (layout may change)
-    const handleResize = () => {
-      cacheOffsets();
-      updateCardTransforms();
-    };
-    window.addEventListener('resize', handleResize);
-
     return () => {
-      window.removeEventListener('resize', handleResize);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (lenisRef.current) {
-        lenisRef.current.destroy();
-      }
       stackCompletedRef.current = false;
       cardsRef.current = [];
       transformsCache.clear();
       isUpdatingRef.current = false;
     };
   }, [
+    children,
     itemDistance,
     itemScale,
     itemStackDistance,
@@ -348,8 +373,6 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
     rotationAmount,
     blurAmount,
     useWindowScroll,
-    onStackComplete,
-    setupLenis,
     updateCardTransforms,
     cacheOffsets
   ]);
@@ -366,7 +389,7 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
         willChange: 'scroll-position'
       }}
     >
-      <div className="scroll-stack-inner  pb-[35rem] px-5 md:px-8 min-h-screen">
+      <div className="scroll-stack-inner  pb-[30rem] lg:pb-[20rem] px-5 md:px-8 min-h-screen">
         {children}
         {/* Spacer so the last pin can release cleanly */}
         <div className="scroll-stack-end w-full h-px" />

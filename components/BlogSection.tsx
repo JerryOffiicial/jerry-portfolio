@@ -1,16 +1,19 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Calendar, User, ArrowRight } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import type { Blog } from "@/types/database";
 
-// ── Blog data ─────────────────────────────────────────────────────────────────
-const BLOG_POSTS = [
+// ── Fallback blog data ────────────────────────────────────────────────────────
+const FALLBACK_POSTS = [
   {
-    id: 1,
+    id: "1",
     title: "Getting Started with Next.js 14 App Router",
-    excerpt: "Exploring the new App Router paradigm and how it changes the way we build Next.js applications. The App Router introduces a new file-system based router built on top of React Server Components, which supports layouts, nested routes, loading states, error handling, and more.",
-    fullContent: "Exploring the new App Router paradigm and how it changes the way we build Next.js applications. The App Router introduces a new file-system based router built on top of React Server Components, which supports layouts, nested routes, loading states, error handling, and more. This fundamental shift from the Pages Router requires understanding new concepts like Server Components vs Client Components, streaming, and the new data-fetching patterns. In this comprehensive guide, we'll walk through everything you need to know to migrate your existing applications or start fresh with the App Router. We'll cover practical examples, best practices, and common pitfalls to avoid when making the transition.",
+    excerpt: "Exploring the new App Router paradigm and how it changes the way we build Next.js applications.",
+    fullContent: "Exploring the new App Router paradigm and how it changes the way we build Next.js applications. The App Router introduces a new file-system based router built on top of React Server Components.",
     category: "technologies",
     date: "2026-03-15",
     creator: "Jerry",
@@ -18,10 +21,10 @@ const BLOG_POSTS = [
     tags: ["Next.js", "React", "Web Development"]
   },
   {
-    id: 2,
+    id: "2",
     title: "Why Developers Are Choosing Supabase Over Firebase",
-    excerpt: "A deep dive into the advantages of Supabase over Firebase for modern web applications. Supabase has been gaining significant traction in the developer community as an open-source alternative to Firebase.",
-    fullContent: "A deep dive into the advantages of Supabase over Firebase for modern web applications. Supabase has been gaining significant traction in the developer community as an open-source alternative to Firebase. While both platforms offer similar functionality including real-time databases, authentication, and storage, there are key differences that make Supabase more appealing for certain use cases. From PostgreSQL instead of NoSQL to better SQL querying capabilities and more transparent pricing, we'll explore why developers are making the switch.",
+    excerpt: "A deep dive into the advantages of Supabase over Firebase for modern web applications.",
+    fullContent: "A deep dive into the advantages of Supabase over Firebase for modern web applications. Supabase has been gaining significant traction in the developer community.",
     category: "technologies",
     date: "2026-03-10",
     creator: "Jerry",
@@ -29,83 +32,43 @@ const BLOG_POSTS = [
     tags: ["Supabase", "Firebase", "Backend"]
   },
   {
-    id: 3,
+    id: "3",
     title: "What is Server-Side Rendering in Next.js?",
-    excerpt: "A comprehensive guide to SSR, SSG, and ISR in Next.js and when to use each approach. Understanding the different rendering strategies in Next.js is crucial for building performant web applications.",
-    fullContent: "A comprehensive guide to SSR, SSG, and ISR in Next.js and when to use each approach. Understanding the different rendering strategies in Next.js is crucial for building performant web applications. Server-Side Rendering (SSR) generates HTML on each request, Static Site Generation (SSG) builds pages at build time, and Incremental Static Regeneration (ISR) combines the best of both worlds. We'll dive deep into each approach with practical examples and performance comparisons.",
+    excerpt: "A comprehensive guide to SSR, SSG, and ISR in Next.js and when to use each approach.",
+    fullContent: "A comprehensive guide to SSR, SSG, and ISR in Next.js and when to use each approach. Understanding the different rendering strategies in Next.js is crucial.",
     category: "concepts",
     date: "2026-02-28",
     creator: "Jerry",
     image: "/blogs/blog3.jpg",
     tags: ["SSR", "Next.js", "Performance"]
   },
-  {
-    id: 4,
-    title: "How I Built Elephant Tours with Next.js and Supabase",
-    excerpt: "The complete journey of building a full-stack travel application from concept to deployment. This project was an ambitious endeavor to create a comprehensive travel booking platform with real-time availability.",
-    fullContent: "The complete journey of building a full-stack travel application from concept to deployment. This project was an ambitious endeavor to create a comprehensive travel booking platform with real-time availability, payment processing, and admin dashboard. I'll walk through the entire development process including architecture decisions, challenges faced, and lessons learned along the way.",
-    category: "projects",
-    date: "2026-02-10",
-    creator: "Jerry",
-    image: "/blogs/blog1.webp",
-    tags: ["Next.js", "Supabase", "Full Stack"]
-  },
-  {
-    id: 5,
-    title: "Fixing iOS Gradient Issues in CSS",
-    excerpt: "How I solved persistent gradient rendering problems on iOS devices with practical CSS solutions. iOS Safari has long been notorious for its inconsistent handling of CSS gradients, leading to frustrating visual bugs.",
-    fullContent: "How I solved persistent gradient rendering problems on iOS devices with practical CSS solutions. iOS Safari has long been notorious for its inconsistent handling of CSS gradients, leading to frustrating visual bugs that only appear on Apple devices. After countless hours of debugging and testing, I've compiled a comprehensive guide to identifying and fixing these gradient issues once and for all.",
-    category: "solutions",
-    date: "2026-01-30",
-    creator: "Jerry",
-    image: "/blogs/blog2.webp",
-    tags: ["CSS", "iOS", "Bug Fix"]
-  },
-  {
-    id: 6,
-    title: "REST API vs GraphQL Explained Simply",
-    excerpt: "Comparing REST and GraphQL architectures to help you choose the right approach for your project. The debate between REST and GraphQL has been ongoing since GraphQL's introduction by Facebook in 2015.",
-    fullContent: "Comparing REST and GraphQL architectures to help you choose the right approach for your project. The debate between REST and GraphQL has been ongoing since GraphQL's introduction by Facebook in 2015. Both have their strengths and weaknesses, and the choice depends heavily on your specific use case. We'll break down the key differences with practical examples, performance considerations, and implementation complexity.",
-    category: "concepts",
-    date: "2026-02-20",
-    creator: "Jerry",
-    image: "/blogs/blog3.jpg",
-    tags: ["API", "GraphQL", "REST"]
-  },
-  {
-    id: 7,
-    title: "Handling Image Uploads with Supabase Storage",
-    excerpt: "A practical guide to implementing secure image uploads with Supabase Storage and React. Image uploads can be surprisingly complex when you consider security, optimization, and user experience.",
-    fullContent: "A practical guide to implementing secure image uploads with Supabase Storage and React. Image uploads can be surprisingly complex when you consider security, optimization, and user experience. This guide walks through implementing a robust image upload system using Supabase Storage, complete with progress indicators, error handling, and automatic optimization.",
-    category: "solutions",
-    date: "2026-01-25",
-    creator: "Jerry",
-    image: "/blogs/blog1.webp",
-    tags: ["Supabase", "Storage", "React"]
-  },
-  {
-    id: 8,
-    title: "Creating an Admin Dashboard with React and TypeScript",
-    excerpt: "Building a responsive admin dashboard with real-time data visualization and user management. Admin dashboards are the backbone of most web applications, providing essential tools for content management.",
-    fullContent: "Building a responsive admin dashboard with real-time data visualization and user management. Admin dashboards are the backbone of most web applications, providing essential tools for content management and user oversight. This tutorial covers building a modern, responsive dashboard with real-time updates, interactive charts, and comprehensive user management features.",
-    category: "projects",
-    date: "2026-02-05",
-    creator: "Jerry",
-    image: "/blogs/blog2.webp",
-    tags: ["React", "TypeScript", "Dashboard"]
-  },
-  {
-    id: 9,
-    title: "What is tRPC and Why People Like It",
-    excerpt: "Understanding tRPC and how it simplifies API development in full-stack TypeScript applications. tRPC has been gaining popularity as a way to build type-safe APIs without the complexity of GraphQL.",
-    fullContent: "Understanding tRPC and how it simplifies API development in full-stack TypeScript applications. tRPC has been gaining popularity as a way to build type-safe APIs without the complexity of GraphQL. We'll explore how tRPC leverages TypeScript to provide end-to-end type safety from your database to your frontend components.",
-    category: "technologies",
-    date: "2026-03-05",
-    creator: "Jerry",
-    image: "/blogs/blog3.jpg",
-    tags: ["tRPC", "TypeScript", "API"]
-  }
 ];
+
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  fullContent: string;
+  category: string;
+  date: string;
+  creator: string;
+  image: string;
+  tags: string[];
+}
+
+function mapBlog(b: Blog): BlogPost {
+  return {
+    id: b.id,
+    title: b.title,
+    excerpt: b.excerpt,
+    fullContent: b.content,
+    category: b.category,
+    date: b.date,
+    creator: b.creator,
+    image: b.image_url,
+    tags: b.tags,
+  };
+}
 
 // ── Categories ────────────────────────────────────────────────────────────────
 const CATEGORIES = [
@@ -125,7 +88,7 @@ function formatDate(dateString: string) {
 }
 
 // ── Blog Card ─────────────────────────────────────────────────────────────────
-function BlogCard({ post, visible }: { post: typeof BLOG_POSTS[0]; visible: boolean }) {
+function BlogCard({ post, visible }: { post: BlogPost; visible: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const contentRef = useRef<HTMLParagraphElement>(null);
   const [height, setHeight] = useState<number>(0);
@@ -207,6 +170,21 @@ function BlogCard({ post, visible }: { post: typeof BLOG_POSTS[0]; visible: bool
 export function BlogSection() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [showAll, setShowAll] = useState(false);
+  const [posts, setPosts] = useState<BlogPost[]>(FALLBACK_POSTS);
+
+  useEffect(() => {
+    async function fetchBlogs() {
+      const { data } = await supabase
+        .from('blogs')
+        .select('*')
+        .order('date', { ascending: false });
+
+      if (data && data.length > 0) {
+        setPosts(data.map(mapBlog));
+      }
+    }
+    fetchBlogs();
+  }, []);
 
   // filter + reset showAll on category change
   useEffect(() => {
@@ -214,20 +192,19 @@ export function BlogSection() {
   }, [activeCategory]);
 
   const filtered = activeCategory === "all"
-    ? BLOG_POSTS
-    : BLOG_POSTS.filter(p => p.category === activeCategory);
+    ? posts
+    : posts.filter(p => p.category === activeCategory);
 
   const visibleIds = new Set(
     (showAll ? filtered : filtered.slice(0, INITIAL_VISIBLE)).map(p => p.id)
   );
 
   const hasMore = filtered.length > INITIAL_VISIBLE;
-  const activeCat = CATEGORIES.find(c => c.id === activeCategory)!;
 
   return (
     <section
       id="blog"
-      className="relative w-full bg-white dark:bg-black overflow-hidden py-24 md:py-32"
+      className="relative w-full bg-white dark:bg-black overflow-hidden pb-24 md:pb-32"
     >
       {/* grid texture */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.025] dark:opacity-[0.04] bg-[linear-gradient(#0D1B2A_1px,transparent_1px),linear-gradient(90deg,#0D1B2A_1px,transparent_1px)] dark:bg-[linear-gradient(#E6E9EC_1px,transparent_1px),linear-gradient(90deg,#E6E9EC_1px,transparent_1px)] bg-[size:60px_60px]" />
@@ -274,18 +251,17 @@ export function BlogSection() {
           })}
         </div>
 
-        {/* ── Cards grid — always render all, show/hide via opacity ── */}
         {/* ── Cards grid ─────────────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14">
-          {BLOG_POSTS.filter(p =>
+          {posts.filter(p =>
             activeCategory === "all" || p.category === activeCategory
           )
-            .filter(p => visibleIds.has(p.id))  // ← only render visible ones
+            .filter(p => visibleIds.has(p.id))
             .map(post => (
               <BlogCard
                 key={post.id}
                 post={post}
-                visible={true}  // ← always true now since we pre-filter
+                visible={true}
               />
             ))}
         </div>
