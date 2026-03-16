@@ -69,8 +69,7 @@ export function Hero() {
               animationSpeed={6}
               showBorder={false}
               direction="horizontal"
-              className="font-medium tracking-[-0.03em] leading-[1.05] font-primary"
-              style={{ fontSize: "clamp(2.6rem, 7vw, 5.5rem)" }}
+              className="font-medium tracking-[-0.03em] leading-[1.05] font-primary text-[clamp(2.6rem,7vw,5.5rem)]"
             >
               Experiences
             </GradientText>
