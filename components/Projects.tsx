@@ -39,7 +39,7 @@ export function Projects() {
   return (
     <section
       id="projects"
-      className="relative w-full bg-white dark:bg-black"
+      className="relative w-full bg-white dark:bg-black pt-24 md:pt-32"
     >
       {/* grid texture */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.025] dark:opacity-[0.04] bg-[linear-gradient(#0D1B2A_1px,transparent_1px),linear-gradient(90deg,#0D1B2A_1px,transparent_1px)] dark:bg-[linear-gradient(#E6E9EC_1px,transparent_1px),linear-gradient(90deg,#E6E9EC_1px,transparent_1px)] bg-[size:60px_60px]" />
@@ -47,7 +47,7 @@ export function Projects() {
       <div className="relative z-10">
 
         {/* ── Section header ─────────────────────────────────────── */}
-        <div className="pt-24 md:pt-32 pb-8 text-center max-w-2xl mx-auto px-5 md:px-8">
+        <div className=" pb-8 text-center max-w-2xl mx-auto px-5 md:px-8">
           <span className="mb-4 inline-block text-xs uppercase tracking-[0.25em] text-[#1A73E8] font-semibold font-secondary">
             Projects
           </span>

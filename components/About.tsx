@@ -49,7 +49,7 @@ export function About() {
   return (
     <section
       id="about"
-      className="relative w-full bg-white dark:bg-black overflow-hidden py-24 md:py-32"
+      className="relative w-full bg-white dark:bg-black overflow-hidden pt-24 md:pt-32"
     >
       {/* subtle grid texture */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.025] dark:opacity-[0.04] bg-[linear-gradient(#0D1B2A_1px,transparent_1px),linear-gradient(90deg,#0D1B2A_1px,transparent_1px)] dark:bg-[linear-gradient(#E6E9EC_1px,transparent_1px),linear-gradient(90deg,#E6E9EC_1px,transparent_1px)] bg-[size:60px_60px]" />

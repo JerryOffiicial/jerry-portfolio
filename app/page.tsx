@@ -1,6 +1,7 @@
 import { About } from "@/components/About";
 import { Hero } from "@/components/Hero";
 import { Projects } from "@/components/Projects";
+import { BlogSection } from "@/components/BlogSection";
 
 export default function Home() {
   return (
@@ -8,6 +9,7 @@ export default function Home() {
       <Hero />
       <About/>
       <Projects/>
+      <BlogSection />
       
       <section id="contact" className="flex min-h-[100vh] w-full items-center justify-center bg-zinc-50 dark:bg-zinc-950 p-24">
          <div className="text-center">
