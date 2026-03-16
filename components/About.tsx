@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import ProfileCard from "@/components/ProfileCard";
-
+import profile_img from '@/public/profile2.png'
 // ── Q&A data ────────────────────────────────────────────────────────────────
 const QA = [
   {
@@ -15,12 +15,12 @@ const QA = [
     a: "React, Next.js, TypeScript, Tailwind CSS on the frontend. Node.js, Express, and Supabase on the backend — with a healthy respect for SQL and a soft spot for MongoDB.",
   },
   {
-    q: "What have you shipped recently?",
+    q: "What have you deployed recently?",
     a: "Elephant Tours — a full-stack travel app with a hybrid CMS (Supabase + Sanity.io), admin dashboard, and zero-downtime Vercel deployment. Also contributed frontend work at Global Island (LK Web Design).",
   },
   {
     q: "How do you approach a new project?",
-    a: "Understand the problem first, then the user. Architecture before aesthetics — but I won't ship something that looks bad either.",
+    a: "Understand the problem first, then the user. Architecture before aesthetics — but I won't build something that looks bad either.",
   },
   {
     q: "Where are you based?",
@@ -28,7 +28,7 @@ const QA = [
   },
   {
     q: "What are you working toward?",
-    a: "Growing into a senior full-stack role — deepening my systems thinking, contributing to open source, and shipping products that matter.",
+    a: "Growing into a senior full-stack role — deepening my systems thinking, contributing to open source, and building scalable projects that matter.",
   },
 ];
 
@@ -86,7 +86,7 @@ export function About() {
               contactText="Contact"
               showUserInfo={true}
               /* swap these for real URLs */
-              avatarUrl="/profile2.png"
+              avatarUrl={profile_img}
               miniAvatarUrl="/profile1.jpeg"
               behindGlowEnabled={true}
               behindGlowColor="rgba(26,115,232,0.5)"
