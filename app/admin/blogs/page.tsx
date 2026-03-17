@@ -23,9 +23,13 @@ export default function AdminBlogs() {
 
     const load = useCallback(async () => {
         setIsLoading(true);
-        const { data } = await supabase.from('blogs').select('*').order('date', { ascending: false });
-        if (data) setBlogs(data);
-        setIsLoading(false);
+        try {
+            const { data, error } = await supabase.from('blogs').select('*').order('date', { ascending: false });
+            if (error) { console.error('Failed to load blogs:', error.message); return; }
+            if (data) setBlogs(data);
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
 
     useEffect(() => { load(); }, [load]);
@@ -72,6 +76,7 @@ export default function AdminBlogs() {
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (isUploading) return;
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -143,9 +148,11 @@ export default function AdminBlogs() {
                                         onChange={handleImageUpload}
                                         className="hidden"
                                         id="blog-image-upload"
+                                        disabled={isUploading}
                                     />
                                     <label
                                         htmlFor="blog-image-upload"
+                                        aria-disabled={isUploading}
                                         className={cn(
                                             "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold font-secondary cursor-pointer border transition-colors",
                                             isUploading

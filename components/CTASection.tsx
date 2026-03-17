@@ -13,31 +13,13 @@ import type { Review } from "@/types/database";
 const FALLBACK_REVIEWS = [
     {
         id: "1",
-        name: "Sarah Mitchell",
-        role: "Product Manager · Fintech Startup",
-        avatar: "/avatars/sarah.jpg",
+        name: "Jerry",
+        role: "dev",
+        avatar: "/profile1.jpeg",
         rating: 5,
         message:
-            "Jerry delivered a flawless Next.js application that exceeded every expectation. His attention to detail, clean code, and proactive communication made the entire process seamless. Highly recommend for any serious web project.",
-    },
-    {
-        id: "2",
-        name: "David Chen",
-        role: "CTO · E-commerce Platform",
-        avatar: "/avatars/david.jpg",
-        rating: 5,
-        message:
-            "Working with Jerry was a pleasure from start to finish. He understood the technical requirements immediately and delivered a robust, scalable solution on time. The Supabase integration he built saved us weeks of development.",
-    },
-    {
-        id: "3",
-        name: "Amara Osei",
-        role: "Founder · Creative Agency",
-        avatar: "/avatars/amara.jpg",
-        rating: 5,
-        message:
-            "Exceptional work on our portfolio redesign. Jerry brings both technical depth and a sharp eye for design — a rare combination. The animations and performance optimizations he added made a huge difference.",
-    },
+            "Share your experience by leaving a review",
+    }
 ];
 
 interface ReviewItem {

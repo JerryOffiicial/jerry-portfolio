@@ -4,29 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { Save, Bot, RefreshCw } from "lucide-react";
 
-const DEFAULT_CONTENT = `You are an AI assistant for Gunaseelan Jerryson's portfolio. Answer questions about Jerry naturally and helpfully.
-
-About:
-- Full Stack Developer based in Kandy, Sri Lanka
-- Skilled in React, Next.js, TypeScript, Tailwind CSS, Node.js, Express.js, Supabase, Sanity.io
-- Also knows Java, C#, .NET, MongoDB, SQL Server, Firebase
-
-Experience:
-- Junior Full Stack Developer at Global Island (Pvt) Ltd – LK Web Design (Nov 2025 – Feb 2026)
-
-Projects:
-- Elephant Tours: full-stack travel app, Next.js + Supabase + Sanity.io, live at elephant-travels-revamp.vercel.app
-- LK Web Design: frontend contributions, live at lkwebdesign.vercel.app
-
-Education:
-- Higher Diploma in Computing & Software Engineering, ICBT Campus Kandy (2025)
-
-Contact:
-- Email: jerrysonjerry1234@gmail.com
-- Phone: +94-76-230-7416
-- GitHub: github.com/JerryOffiicial
-
-Always respond in first person as Jerry. Be friendly, concise, and professional.`;
+import { DEFAULT_KNOWLEDGE_BASE } from "@/lib/constants";
 
 export default function AdminAbout() {
     const [content, setContent] = useState("");
@@ -34,6 +12,7 @@ export default function AdminAbout() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [savedAt, setSavedAt] = useState<string | null>(null);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
     const load = useCallback(async () => {
         setIsLoading(true);
@@ -50,7 +29,7 @@ export default function AdminAbout() {
             setSavedAt(new Date(data.updated_at).toLocaleString());
         } else {
             // If no row exists yet, start with the default
-            setContent(DEFAULT_CONTENT);
+            setContent(DEFAULT_KNOWLEDGE_BASE);
         }
         setIsLoading(false);
     }, []);
@@ -59,24 +38,29 @@ export default function AdminAbout() {
 
     const save = async () => {
         setIsSaving(true);
+        setSaveError(null);
         const now = new Date().toISOString();
 
-        if (rowId) {
-            await supabase
-                .from('knowledge_base')
-                .update({ content, updated_at: now })
-                .eq('id', rowId);
-        } else {
-            const { data } = await supabase
-                .from('knowledge_base')
-                .insert({ content, updated_at: now })
-                .select()
-                .single();
-            if (data) setRowId(data.id);
+        try {
+            if (rowId) {
+                const { error } = await supabase
+                    .from('knowledge_base')
+                    .update({ content, updated_at: now })
+                    .eq('id', rowId);
+                if (error) { setSaveError(error.message); return; }
+            } else {
+                const { data, error } = await supabase
+                    .from('knowledge_base')
+                    .insert({ content, updated_at: now })
+                    .select()
+                    .single();
+                if (error) { setSaveError(error.message); return; }
+                if (data) setRowId(data.id);
+            }
+            setSavedAt(new Date(now).toLocaleString());
+        } finally {
+            setIsSaving(false);
         }
-
-        setSavedAt(new Date(now).toLocaleString());
-        setIsSaving(false);
     };
 
     return (
@@ -110,6 +94,15 @@ export default function AdminAbout() {
                     </button>
                 </div>
             </div>
+
+            {/* Save error */}
+            {saveError && (
+                <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 p-4">
+                    <p className="text-xs font-secondary text-red-400">
+                        <strong>Save failed:</strong> {saveError}
+                    </p>
+                </div>
+            )}
 
             {/* Tips */}
             <div className="mb-4 rounded-2xl border border-[#1A73E8]/20 bg-[#1A73E8]/05 p-4">

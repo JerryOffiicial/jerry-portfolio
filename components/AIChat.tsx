@@ -55,7 +55,7 @@ export function AIChat() {
         },
         body: JSON.stringify({
           message: inputText.trim(),
-          history: messages.slice(-10), // Send last 10 messages for context
+          history: messages.filter(msg => msg.id !== "1").slice(-10), // Filter out greeting and send last 10 messages
         }),
       });
 
@@ -79,7 +79,7 @@ export function AIChat() {
       console.error("Error sending message:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "Sorry, I'm having trouble responding right now. Please try again later.",
+        text: error instanceof Error ? error.message : "Sorry, I'm having trouble responding right now. Please try again later.",
         sender: "ai",
         timestamp: new Date(),
       };
@@ -186,11 +186,13 @@ export function AIChat() {
           <div className="bg-white/40 dark:bg-black/40 backdrop-blur-md border-t border-white/20 dark:border-white/10 p-4">
             <div className="flex gap-2 relative">
               <input
+                id="chat-input"
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={handleKeyPress}
                 placeholder="Ask about Jerry's skills, projects..."
+                aria-label="Message"
                 className="flex-1 pl-5 pr-12 py-3.5 rounded-2xl border border-white/40 dark:border-white/10 bg-white/50 dark:bg-black/50 text-[#0D1B2A] dark:text-white font-secondary text-sm focus:outline-none focus:ring-2 focus:ring-[#1A73E8]/30 focus:border-[#1A73E8]/50 transition-all placeholder:text-[#0D1B2A]/40 dark:placeholder:text-white/40 shadow-inner"
                 disabled={isLoading}
               />
