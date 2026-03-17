@@ -4,6 +4,7 @@ import { Projects } from "@/components/Projects";
 import { BlogSection } from "@/components/BlogSection";
 import { CTASection } from "@/components/CTASection";
 import { Footer } from "@/components/Footer";
+import { AIChat } from "@/components/AIChat";
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
       <Projects/>
       <BlogSection />
       <CTASection/>
+      <AIChat />
     </main>
   );
 }

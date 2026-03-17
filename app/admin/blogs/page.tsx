@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Blog } from "@/types/database";
-import { Plus, Pencil, Trash2, Save, X, Calendar } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, Calendar, Upload, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const EMPTY_FORM = {
@@ -17,10 +17,15 @@ export default function AdminBlogs() {
     const [editing, setEditing] = useState<string | null>(null);
     const [form, setForm] = useState(EMPTY_FORM);
     const [isNew, setIsNew] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const load = useCallback(async () => {
+        setIsLoading(true);
         const { data } = await supabase.from('blogs').select('*').order('date', { ascending: false });
         if (data) setBlogs(data);
+        setIsLoading(false);
     }, []);
 
     useEffect(() => { load(); }, [load]);
@@ -66,8 +71,29 @@ export default function AdminBlogs() {
         load();
     };
 
-    const InputCls = "rounded-[14px] px-4 py-3 text-sm font-secondary outline-none bg-white/[0.04] border border-white/10 text-white placeholder:text-white/25 focus:border-[#1A73E8]/60 w-full";
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
+        setIsUploading(true);
+        const ext = file.name.split('.').pop();
+        const fileName = `blogs/${Date.now()}.${ext}`;
+
+        const { data, error } = await supabase.storage
+            .from('portfolio-images')
+            .upload(fileName, file, { upsert: true });
+
+        if (!error && data) {
+            const { data: urlData } = supabase.storage.from('portfolio-images').getPublicUrl(data.path);
+            setForm(prev => ({ ...prev, image_url: urlData.publicUrl }));
+        } else {
+            alert(`Upload failed: ${error?.message}`);
+        }
+        setIsUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+
+    const InputCls = "rounded-[14px] px-4 py-3 text-sm font-secondary outline-none bg-white/[0.04] border border-white/10 text-white placeholder:text-white/25 focus:border-[#1A73E8]/60 w-full";
     const CATEGORIES = ["technologies", "concepts", "projects", "solutions"];
 
     return (
@@ -106,9 +132,37 @@ export default function AdminBlogs() {
                             <label className="text-xs font-secondary text-white/40 mb-1 block">Creator</label>
                             <input value={form.creator} onChange={(e) => setForm({ ...form, creator: e.target.value })} placeholder="Author name" className={InputCls} />
                         </div>
-                        <div>
-                            <label className="text-xs font-secondary text-white/40 mb-1 block">Cover Image URL</label>
-                            <input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="/blogs/image.webp" className={InputCls} />
+                        <div className="md:col-span-2">
+                            <div className="flex items-center justify-between mb-1">
+                                <label className="text-xs font-secondary text-white/40">Cover Image</label>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                        id="blog-image-upload"
+                                    />
+                                    <label
+                                        htmlFor="blog-image-upload"
+                                        className={cn(
+                                            "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold font-secondary cursor-pointer border transition-colors",
+                                            isUploading
+                                                ? "border-white/10 text-white/30 cursor-not-allowed"
+                                                : "border-[#1A73E8]/40 text-[#1A73E8] bg-[#1A73E8]/10 hover:bg-[#1A73E8]/20"
+                                        )}
+                                    >
+                                        {isUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                                        {isUploading ? "Uploading..." : "Upload Image"}
+                                    </label>
+                                </div>
+                            </div>
+                            <input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="/blogs/image.webp or upload above" className={InputCls} />
+                            {form.image_url && (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={form.image_url} alt="preview" className="mt-2 h-20 object-cover rounded-lg border border-white/10" />
+                            )}
                         </div>
                         <div>
                             <label className="text-xs font-secondary text-white/40 mb-1 block">Tags (comma separated)</label>
@@ -134,42 +188,52 @@ export default function AdminBlogs() {
                 </div>
             )}
 
-            {/* Blog list */}
-            <div className="rounded-2xl border border-white/[0.06] overflow-hidden">
-                {blogs.length === 0 ? (
-                    <p className="p-8 text-center text-sm font-secondary text-white/30">No blog posts yet.</p>
-                ) : (
-                    <div className="divide-y divide-white/[0.06]">
-                        {blogs.map((blog) => (
-                            <div key={blog.id} className="flex items-start gap-4 p-5 hover:bg-white/[0.02] transition-colors group">
-                                {blog.image_url && (
-                                    <div className="w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-white/[0.04]">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={blog.image_url} alt={blog.title} className="w-full h-full object-cover" />
-                                    </div>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold font-secondary text-white/90 truncate">{blog.title}</p>
-                                    <div className="flex items-center gap-3 mt-1">
-                                        <span className="text-[10px] uppercase font-semibold font-secondary px-2 py-0.5 rounded-full border border-white/[0.08] bg-white/[0.03] text-white/50">{blog.category}</span>
-                                        <span className="flex items-center gap-1 text-xs font-secondary text-white/30">
-                                            <Calendar size={10} /> {blog.date}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                                    <button onClick={() => startEdit(blog)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 text-white/30 hover:text-[#1A73E8] transition-colors">
-                                        <Pencil size={14} />
-                                    </button>
-                                    <button onClick={() => remove(blog.id)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-red-500/10 text-white/30 hover:text-red-400 transition-colors">
-                                        <Trash2 size={14} />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+            {/* Loading State */}
+            {isLoading ? (
+                <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-16 flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="w-7 h-7 border-2 border-[#1A73E8] border-t-transparent rounded-full animate-spin" />
+                        <p className="text-xs font-secondary text-white/30">Loading blog posts...</p>
                     </div>
-                )}
-            </div>
+                </div>
+            ) : (
+                /* Blog list */
+                <div className="rounded-2xl border border-white/[0.06] overflow-hidden">
+                    {blogs.length === 0 ? (
+                        <p className="p-8 text-center text-sm font-secondary text-white/30">No blog posts yet.</p>
+                    ) : (
+                        <div className="divide-y divide-white/[0.06]">
+                            {blogs.map((blog) => (
+                                <div key={blog.id} className="flex items-start gap-4 p-5 hover:bg-white/[0.02] transition-colors group">
+                                    {blog.image_url && (
+                                        <div className="w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-white/[0.04]">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={blog.image_url} alt={blog.title} className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-semibold font-secondary text-white/90 truncate">{blog.title}</p>
+                                        <div className="flex items-center gap-3 mt-1">
+                                            <span className="text-[10px] uppercase font-semibold font-secondary px-2 py-0.5 rounded-full border border-white/[0.08] bg-white/[0.03] text-white/50">{blog.category}</span>
+                                            <span className="flex items-center gap-1 text-xs font-secondary text-white/30">
+                                                <Calendar size={10} /> {blog.date}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                        <button onClick={() => startEdit(blog)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 text-white/30 hover:text-[#1A73E8] transition-colors">
+                                            <Pencil size={14} />
+                                        </button>
+                                        <button onClick={() => remove(blog.id)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-red-500/10 text-white/30 hover:text-red-400 transition-colors">
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

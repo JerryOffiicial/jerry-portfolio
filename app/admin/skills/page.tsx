@@ -10,10 +10,13 @@ export default function AdminSkills() {
     const [editing, setEditing] = useState<string | null>(null);
     const [form, setForm] = useState({ name: "" });
     const [isNew, setIsNew] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     const load = useCallback(async () => {
+        setIsLoading(true);
         const { data } = await supabase.from('skills').select('*').order('sort_order');
         if (data) setSkills(data);
+        setIsLoading(false);
     }, []);
 
     useEffect(() => { load(); }, [load]);
@@ -68,26 +71,36 @@ export default function AdminSkills() {
                 </div>
             )}
 
-            {/* Skills grid */}
-            <div className="flex flex-wrap gap-2">
-                {skills.length === 0 && (
-                    <p className="p-8 text-center text-sm font-secondary text-white/30 w-full">No skills yet.</p>
-                )}
-                {skills.map((skill) => (
-                    <div
-                        key={skill.id}
-                        className="group flex items-center gap-2 rounded-full px-4 py-2 border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] transition-colors"
-                    >
-                        <span className="text-sm font-secondary text-white/70">{skill.name}</span>
-                        <button onClick={() => startEdit(skill)} className="opacity-0 group-hover:opacity-100 text-white/30 hover:text-[#1A73E8] transition-all">
-                            <Pencil size={12} />
-                        </button>
-                        <button onClick={() => remove(skill.id)} className="opacity-0 group-hover:opacity-100 text-white/30 hover:text-red-400 transition-all">
-                            <Trash2 size={12} />
-                        </button>
+            {/* Loading State */}
+            {isLoading ? (
+                <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-16 flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="w-7 h-7 border-2 border-[#1A73E8] border-t-transparent rounded-full animate-spin" />
+                        <p className="text-xs font-secondary text-white/30">Loading skills...</p>
                     </div>
-                ))}
-            </div>
+                </div>
+            ) : (
+                /* Skills grid */
+                <div className="flex flex-wrap gap-2">
+                    {skills.length === 0 && (
+                        <p className="p-8 text-center text-sm font-secondary text-white/30 w-full">No skills yet.</p>
+                    )}
+                    {skills.map((skill) => (
+                        <div
+                            key={skill.id}
+                            className="group flex items-center gap-2 rounded-full px-4 py-2 border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] transition-colors"
+                        >
+                            <span className="text-sm font-secondary text-white/70">{skill.name}</span>
+                            <button onClick={() => startEdit(skill)} className="opacity-0 group-hover:opacity-100 text-white/30 hover:text-[#1A73E8] transition-all">
+                                <Pencil size={12} />
+                            </button>
+                            <button onClick={() => remove(skill.id)} className="opacity-0 group-hover:opacity-100 text-white/30 hover:text-red-400 transition-all">
+                                <Trash2 size={12} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

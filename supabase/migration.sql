@@ -174,3 +174,49 @@ insert into public.reviews (name, role, avatar_url, rating, message, status) val
   ('Sarah Mitchell', 'Product Manager · Fintech Startup', '/avatars/sarah.jpg', 5, 'Jerry delivered a flawless Next.js application that exceeded every expectation. His attention to detail, clean code, and proactive communication made the entire process seamless. Highly recommend for any serious web project.', 'approved'),
   ('David Chen', 'CTO · E-commerce Platform', '/avatars/david.jpg', 5, 'Working with Jerry was a pleasure from start to finish. He understood the technical requirements immediately and delivered a robust, scalable solution on time. The Supabase integration he built saved us weeks of development.', 'approved'),
   ('Amara Osei', 'Founder · Creative Agency', '/avatars/amara.jpg', 5, 'Exceptional work on our portfolio redesign. Jerry brings both technical depth and a sharp eye for design — a rare combination. The animations and performance optimizations he added made a huge difference.', 'approved');
+
+-- ============================================================
+-- 6. AI Knowledge Base
+-- A single-row table that the admin can update to change what
+-- the AI assistant knows about Jerry.
+-- ============================================================
+
+create table if not exists public.knowledge_base (
+  id         uuid primary key default gen_random_uuid(),
+  content    text not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.knowledge_base enable row level security;
+
+create policy "Public read knowledge_base"  on public.knowledge_base for select using (true);
+create policy "Admin insert knowledge_base" on public.knowledge_base for insert with check (auth.role() = 'authenticated');
+create policy "Admin update knowledge_base" on public.knowledge_base for update using (auth.role() = 'authenticated');
+create policy "Admin delete knowledge_base" on public.knowledge_base for delete using (auth.role() = 'authenticated');
+
+-- Seed: initial knowledge base
+insert into public.knowledge_base (content) values (
+'You are an AI assistant for Gunaseelan Jerryson''s portfolio. Answer questions about Jerry naturally and helpfully.
+
+About:
+- Full Stack Developer based in Kandy, Sri Lanka
+- Skilled in React, Next.js, TypeScript, Tailwind CSS, Node.js, Express.js, Supabase, Sanity.io
+- Also knows Java, C#, .NET, MongoDB, SQL Server, Firebase
+
+Experience:
+- Junior Full Stack Developer at Global Island (Pvt) Ltd – LK Web Design (Nov 2025 – Feb 2026)
+
+Projects:
+- Elephant Tours: full-stack travel app, Next.js + Supabase + Sanity.io, live at elephant-travels-revamp.vercel.app
+- LK Web Design: frontend contributions, live at lkwebdesign.vercel.app
+
+Education:
+- Higher Diploma in Computing & Software Engineering, ICBT Campus Kandy (2025)
+
+Contact:
+- Email: jerrysonjerry1234@gmail.com
+- Phone: +94-76-230-7416
+- GitHub: github.com/JerryOffiicial
+
+Always respond in first person as Jerry. Be friendly, concise, and professional.'
+);
