@@ -19,23 +19,19 @@ export default function AdminOverview() {
 
     useEffect(() => {
         async function fetchStats() {
-            const [projects, blogs, skills, faqs, approved, pending] = await Promise.all([
-                supabase.from('projects').select('id', { count: 'exact', head: true }),
-                supabase.from('blogs').select('id', { count: 'exact', head: true }),
-                supabase.from('skills').select('id', { count: 'exact', head: true }),
-                supabase.from('faqs').select('id', { count: 'exact', head: true }),
-                supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
-                supabase.from('reviews').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-            ]);
+            try {
+                const response = await fetch('/api/admin?endpoint=stats');
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    console.error('Failed to fetch stats:', result.error);
+                    return;
+                }
 
-            setStats({
-                projects: projects.count ?? 0,
-                blogs: blogs.count ?? 0,
-                skills: skills.count ?? 0,
-                faqs: faqs.count ?? 0,
-                approvedReviews: approved.count ?? 0,
-                pendingReviews: pending.count ?? 0,
-            });
+                setStats(result.data);
+            } catch (error) {
+                console.error('Stats fetch error:', error);
+            }
         }
         fetchStats();
     }, []);

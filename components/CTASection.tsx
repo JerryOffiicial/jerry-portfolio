@@ -378,9 +378,9 @@ export function CTASection() {
                             <div className="flex items-center gap-3">
                                 {[
                                     { icon: <Github size={18} />, href: "https://github.com/JerryOffiicial", label: "GitHub" },
-                                    { icon: <Linkedin size={18} />, href: "https://linkedin.com/in/jerryson", label: "LinkedIn" },
+                                    { icon: <Linkedin size={18} />, href: "www.linkedin.com/in/jerryson-gunaseelan-281b76379", label: "LinkedIn" },
                                     { icon: <Mail size={18} />, href: "mailto:jerrysonjerry1234@gmail.com", label: "Email" },
-                                    { icon: <Phone size={18} />, href: "tel:+94762307416", label: "Phone" },
+                                    { icon: <Phone size={18} />, href: "tel:+94 *** ****", label: "Phone" },
                                 ].map(({ icon, href, label }) => (
                                     <a
                                         key={label}
