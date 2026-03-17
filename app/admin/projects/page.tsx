@@ -46,7 +46,7 @@ export default function AdminProjects() {
             stack: p.stack.join(", "),
             live_url: p.live_url,
             github_url: p.github_url,
-            images: p.images.join("\\n"),
+            images: p.images.join("\n"),
             year: p.year,
             accent_color: p.accent_color,
             bg_classes: p.bg_classes,
@@ -63,7 +63,7 @@ export default function AdminProjects() {
             stack: form.stack.split(",").map(s => s.trim()).filter(Boolean),
             live_url: form.live_url,
             github_url: form.github_url,
-            images: form.images.split("\\n").map(s => s.trim()).filter(Boolean),
+            images: form.images.split(/\r?\n/).map(s => s.trim()).filter(Boolean),
             year: form.year,
             accent_color: form.accent_color,
             bg_classes: form.bg_classes,
@@ -85,6 +85,7 @@ export default function AdminProjects() {
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (isUploading) return;
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -101,7 +102,7 @@ export default function AdminProjects() {
             const publicUrl = urlData.publicUrl;
             setForm(prev => ({
                 ...prev,
-                images: prev.images ? `${prev.images}\\n${publicUrl}` : publicUrl,
+                images: prev.images ? `${prev.images}\n${publicUrl}` : publicUrl,
             }));
         } else {
             alert(`Upload failed: ${error?.message}`);
@@ -180,6 +181,8 @@ export default function AdminProjects() {
                                     onChange={handleImageUpload}
                                     className="hidden"
                                     id="project-image-upload"
+                                    disabled={isUploading}
+                                    aria-disabled={isUploading}
                                 />
                                 <label
                                     htmlFor="project-image-upload"

@@ -181,11 +181,27 @@ insert into public.reviews (name, role, avatar_url, rating, message, status) val
 -- the AI assistant knows about Jerry.
 -- ============================================================
 
+-- Function to auto-update updated_at column
+create or replace function update_updated_at_column()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+-- Create table with fixed ID for single-row constraint
 create table if not exists public.knowledge_base (
-  id         uuid primary key default gen_random_uuid(),
+  id         text primary key default 'default',
   content    text not null,
   updated_at timestamptz not null default now()
 );
+
+-- Trigger to auto-update updated_at on modifications
+create trigger update_knowledge_base_updated_at
+  before update on public.knowledge_base
+  for each row
+  execute procedure update_updated_at_column();
 
 alter table public.knowledge_base enable row level security;
 
@@ -194,9 +210,10 @@ create policy "Admin insert knowledge_base" on public.knowledge_base for insert 
 create policy "Admin update knowledge_base" on public.knowledge_base for update using (auth.role() = 'authenticated');
 create policy "Admin delete knowledge_base" on public.knowledge_base for delete using (auth.role() = 'authenticated');
 
--- Seed: initial knowledge base
-insert into public.knowledge_base (content) values (
-'You are an AI assistant for Gunaseelan Jerryson''s portfolio. Answer questions about Jerry naturally and helpfully.
+-- Seed: initial knowledge base (using upsert to handle single-row constraint)
+insert into public.knowledge_base (id, content) values (
+  'default',
+  'You are an AI assistant for Gunaseelan Jerryson''s portfolio. Answer questions about Jerry naturally and helpfully.
 
 About:
 - Full Stack Developer based in Kandy, Sri Lanka
@@ -219,4 +236,6 @@ Contact:
 - GitHub: github.com/JerryOffiicial
 
 Always respond in first person as Jerry. Be friendly, concise, and professional.'
-);
+) on conflict (id) do update set 
+  content = excluded.content,
+  updated_at = now();

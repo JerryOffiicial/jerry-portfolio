@@ -5,8 +5,6 @@ export async function GET() {
   
   return NextResponse.json({
     hasApiKey: !!apiKey,
-    apiKeyLength: apiKey?.length || 0,
-    apiKeyPrefix: apiKey?.substring(0, 10) + '...' || 'not_found',
     timestamp: new Date().toISOString()
   });
 }

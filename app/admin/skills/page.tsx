@@ -14,9 +14,14 @@ export default function AdminSkills() {
 
     const load = useCallback(async () => {
         setIsLoading(true);
-        const { data } = await supabase.from('skills').select('*').order('sort_order');
-        if (data) setSkills(data);
-        setIsLoading(false);
+        try {
+            const { data } = await supabase.from('skills').select('*').order('sort_order');
+            if (data) setSkills(data);
+        } catch (err) {
+            console.error('Failed to load skills:', err);
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
 
     useEffect(() => { load(); }, [load]);

@@ -21,18 +21,21 @@ export default function AdminReviews() {
     useEffect(() => { load(); }, [load]);
 
     const approve = async (id: string) => {
-        await supabase.from('reviews').update({ status: 'approved' }).eq('id', id);
+        const { error } = await supabase.from('reviews').update({ status: 'approved' }).eq('id', id);
+        if (error) { alert(`Failed to approve review: ${error.message}`); return; }
         load();
     };
 
     const reject = async (id: string) => {
-        await supabase.from('reviews').update({ status: 'rejected' }).eq('id', id);
+        const { error } = await supabase.from('reviews').update({ status: 'rejected' }).eq('id', id);
+        if (error) { alert(`Failed to reject review: ${error.message}`); return; }
         load();
     };
 
     const remove = async (id: string) => {
         if (!confirm("Delete this review permanently?")) return;
-        await supabase.from('reviews').delete().eq('id', id);
+        const { error } = await supabase.from('reviews').delete().eq('id', id);
+        if (error) { alert(`Failed to delete review: ${error.message}`); return; }
         load();
     };
 
