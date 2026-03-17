@@ -24,9 +24,13 @@ export default function AdminBlogs() {
     const load = useCallback(async () => {
         setIsLoading(true);
         try {
-            const { data, error } = await supabase.from('blogs').select('*').order('date', { ascending: false });
-            if (error) { console.error('Failed to load blogs:', error.message); return; }
-            if (data) setBlogs(data);
+            const response = await fetch('/api/admin?endpoint=blogs');
+            const result = await response.json();
+            if (!response.ok) {
+                console.error('Failed to load blogs:', result.error);
+                return;
+            }
+            if (result.data) setBlogs(result.data);
         } finally {
             setIsLoading(false);
         }
@@ -60,19 +64,56 @@ export default function AdminBlogs() {
             tags: form.tags.split(",").map(s => s.trim()).filter(Boolean),
         };
 
-        if (isNew) {
-            await supabase.from('blogs').insert(payload);
-        } else if (editing) {
-            await supabase.from('blogs').update(payload).eq('id', editing);
+        try {
+            let response: Response;
+            if (isNew) {
+                response = await fetch('/api/admin?endpoint=blogs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } else if (editing) {
+                response = await fetch('/api/admin?endpoint=blogs', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: editing, ...payload })
+                });
+            } else {
+                return;
+            }
+
+            const result = await response.json();
+            if (!response.ok) {
+                console.error('Failed to save blog:', result.error);
+                alert('Failed to save: ' + result.error);
+                return;
+            }
+
+            cancel();
+            load();
+        } catch (error) {
+            console.error('Save error:', error);
+            alert('Failed to save: ' + error);
         }
-        cancel();
-        load();
     };
 
     const remove = async (id: string) => {
         if (!confirm("Delete this blog post?")) return;
-        await supabase.from('blogs').delete().eq('id', id);
-        load();
+        try {
+            const response = await fetch(`/api/admin?endpoint=blogs&id=${id}`, {
+                method: 'DELETE'
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                console.error('Failed to delete blog:', result.error);
+                alert('Failed to delete: ' + result.error);
+                return;
+            }
+            load();
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('Failed to delete: ' + error);
+        }
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,21 +122,37 @@ export default function AdminBlogs() {
         if (!file) return;
 
         setIsUploading(true);
-        const ext = file.name.split('.').pop();
-        const fileName = `blogs/${Date.now()}.${ext}`;
+        
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('folder', 'blogs');
 
-        const { data, error } = await supabase.storage
-            .from('portfolio-images')
-            .upload(fileName, file, { upsert: true });
+            const response = await fetch('/api/admin?endpoint=upload', {
+                method: 'POST',
+                body: formData
+            });
 
-        if (!error && data) {
-            const { data: urlData } = supabase.storage.from('portfolio-images').getPublicUrl(data.path);
-            setForm(prev => ({ ...prev, image_url: urlData.publicUrl }));
-        } else {
-            alert(`Upload failed: ${error?.message}`);
+            const result = await response.json();
+            
+            if (!response.ok) {
+                console.error('Upload failed:', result.error);
+                alert(`Upload failed: ${result.error}`);
+                return;
+            }
+
+            if (result.success && result.url) {
+                setForm(prev => ({ ...prev, image_url: result.url }));
+            } else {
+                alert('Upload failed: Unknown error');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert(`Upload failed: ${error}`);
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
         }
-        setIsUploading(false);
-        if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
     const InputCls = "rounded-[14px] px-4 py-3 text-sm font-secondary outline-none bg-white/[0.04] border border-white/10 text-white placeholder:text-white/25 focus:border-[#1A73E8]/60 w-full";

@@ -97,8 +97,8 @@ export function Hero() {
             <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-0.5" />
           </Link>
 
-          <Link
-            href="/resume.pdf"
+          <button
+            onClick={() => alert("Please contact me at jerrysonjerry1234@gmail.com or via LinkedIn to request my CV.")}
             className={cn(
               "group relative flex w-full sm:w-auto items-center justify-center gap-2.5 rounded-4xl px-8 py-3.5 text-sm font-semibold tracking-[-0.01em]",
               "border border-[#0D1B2A]/15 dark:border-[#E6E9EC]/12",
@@ -112,7 +112,7 @@ export function Hero() {
           >
             <Download size={16} className="transition-transform duration-300 group-hover:-translate-y-0.5" />
             Download Resume
-          </Link>
+          </button>
         </div>
 
         {/* Scroll hint */}

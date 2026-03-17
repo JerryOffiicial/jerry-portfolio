@@ -239,3 +239,56 @@ Always respond in first person as Jerry. Be friendly, concise, and professional.
 ) on conflict (id) do update set 
   content = excluded.content,
   updated_at = now();
+
+-- image policy
+
+UPDATE storage.buckets
+SET public = true
+WHERE id = 'portfolio-images';
+
+-- Make bucket public for reads
+UPDATE storage.buckets
+SET public = true
+WHERE id = 'portfolio-images';
+
+-- Allow authenticated users to upload
+CREATE POLICY "Admin upload images"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'portfolio-images');
+
+-- Allow service role to upload (bypasses RLS)
+CREATE POLICY "Service role upload images"
+ON storage.objects
+FOR INSERT
+TO service_role
+WITH CHECK (bucket_id = 'portfolio-images');
+
+-- Allow authenticated users to update
+CREATE POLICY "Admin update images"
+ON storage.objects
+FOR UPDATE
+TO authenticated
+WITH CHECK (bucket_id = 'portfolio-images');
+
+-- Allow service role to update (bypasses RLS)
+CREATE POLICY "Service role update images"
+ON storage.objects
+FOR UPDATE
+TO service_role
+WITH CHECK (bucket_id = 'portfolio-images');
+
+-- Allow authenticated users to delete
+CREATE POLICY "Admin delete images"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (bucket_id = 'portfolio-images');
+
+-- Allow service role to delete (bypasses RLS)
+CREATE POLICY "Service role delete images"
+ON storage.objects
+FOR DELETE
+TO service_role
+USING (bucket_id = 'portfolio-images');
