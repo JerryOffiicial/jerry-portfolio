@@ -14,6 +14,7 @@ import {
     LogOut,
     Menu,
     X,
+    Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
     { label: "Projects", href: "/admin/projects", icon: FolderKanban },
     { label: "Blogs", href: "/admin/blogs", icon: FileText },
     { label: "Reviews", href: "/admin/reviews", icon: Star },
+    { label: "AI Knowledge", href: "/admin/about", icon: Bot },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

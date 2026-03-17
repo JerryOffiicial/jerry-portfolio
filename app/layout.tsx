@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/Navbar";
+import { ConditionalNavbar } from "@/components/ConditionalNavbar";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${manrope.variable} ${dm_sans.variable} antialiased`}>
-        <Navbar />
+        <ConditionalNavbar />
         {children}
       </body>
     </html>

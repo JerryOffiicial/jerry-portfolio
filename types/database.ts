@@ -161,6 +161,23 @@ export interface Database {
           created_at?: string;
         };
       };
+      knowledge_base: {
+        Row: {
+          id: string;
+          content: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          content: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          content?: string;
+          updated_at?: string;
+        };
+      };
     };
   };
 }
@@ -171,3 +188,4 @@ export type Skill = Database['public']['Tables']['skills']['Row'];
 export type Project = Database['public']['Tables']['projects']['Row'];
 export type Blog = Database['public']['Tables']['blogs']['Row'];
 export type Review = Database['public']['Tables']['reviews']['Row'];
+export type KnowledgeBase = Database['public']['Tables']['knowledge_base']['Row'];
